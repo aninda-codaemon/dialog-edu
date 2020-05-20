@@ -27,13 +27,15 @@ class Course extends CI_Controller {
 
 	public function get_course_data(){
 		$result = $this->get_course_api();
-		
+		//echo '<pre>';
+		//print_r($result);
 		if(!empty($result)){
 			$last = $result->last;
 			$page_array = explode('page=', $last);
 			$last_page = $page_array[1];
 
 			if($last_page == 0){
+				echo 'Page : '.$i.'<br>';
 				$list = $result->list;
 				if(!empty($list)){
 					foreach($list as $val){
@@ -58,6 +60,7 @@ class Course extends CI_Controller {
 				}
 			}else{
 				for($i=0; $i<=$last_page; $i++){
+					echo 'Page : '.$i.'<br>';
 					$data = $this->get_course_api($i);
 					if(!empty($data)){
 						$list = $data->list;
@@ -135,66 +138,19 @@ class Course extends CI_Controller {
 		return $taxonomy_term;
 	}
 
-	// public function category_data_prepare($category_id = 0){
-	// 	$category_data = $this->get_taxonomy_term_details($category_id);
-	// 	if(!empty($category_data)){
-	// 		$category_list = $category_data->list;
-	// 		if(!empty($category_list)){
-	// 			foreach($category_list as $val_category){
-	// 				$check_category_exist = $this->Course_model->check_category_exists($val_category->tid);
-	// 				if($check_course_exist){
-	// 					//update category
-	// 				}else{
-	// 					$parent_category_list = $val_category->parent;
-	// 					if(!empty($parent_category_list)){
-	// 						$check_parent_exist = $this->Course_model->check_category_exists($parent_category_list[0]->id);
-	// 						if($check_course_exist){
-	// 							//update category
-	// 						}else{
-	// 							$inserted_pid = $this->category_data_prepare($parent_category_list[0]->id);
-	// 						}
-	// 					}else{
-	// 						$parent_id = 0;
-	// 					}
-
-	// 					$slug = str_replace(' ', '-', $val_category->title);
-	// 					$slug = preg_replace('/[^a-zA-Z0-9_\-]/', '', $slug);
-
-	// 					$insert_category_data['site_id'] = 1226;
-	// 					$insert_category_data['name'] = $val_category->title;
-	// 					$insert_category_data['slug'] = $slug;
-	// 					$insert_category_data['external_id'] = $val_category->tid;
-	// 					$insert_category_data['parent_id'] = $parent_id;
-	// 					$insert_category_data['description'] = $val_category->description;
-
-	// 					$cid = $this->Course_model->insert_category($insert_category_data);
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-
-	// 	return $cid;
-	// }
-
 	public function prepare_dialogedu_data($course_data = array()){
 		if(!empty($course_data) && isset($course_data->type) && $course_data->type == 'course'){
 			$course_status = $course_data->status;
 			$course_date = $course_data->field_course_date;
-			$time = strtotime('2020-01-01 00:00:00');
-			if($course_status == 1){
+			$time = strtotime('2019-01-01 00:00:00');
+			//if($course_status == 1){
 				if(!empty($course_date)){
 					$course_start_datetime = $course_date->value;
-					echo '<pre>';
-					print_r($course_data);
-					if(!empty($course_start_datetime) && $course_start_datetime > $time){
-						/** Course Category data operation section */
-						// $course_category = $course_data->field_course_category;
-						// if(!empty($course_category)){
-						// 	foreach($course_category as $category){
-						// 		$category_data = $this->category_data_prepare($category->id);
-						// 		echo '<pre>'; print_r($category_data);
-						// 	}
-						// }
+					$course_expiry_datetime = $course_date->value2;
+					if(!empty($course_expiry_datetime) && $course_expiry_datetime > $time){
+						//echo '<pre>';
+						//print_r($course_data);
+						echo 'NID : '.$course_data->nid.'<br>';
 
 						/** Course data operation section */
 
@@ -294,14 +250,16 @@ class Course extends CI_Controller {
 							</script>';
 
 						if($check_course_exist){
-							$update_course_data['startdate'] = date('Y-m-d', $course_start_datetime);	
+							$update_course_data['startdate'] = date('Y-m-d', $course_start_datetime);
+							$update_course_data['expirydate'] = date('Y-m-d', $course_expiry_datetime);
 							$update_course_data['site_id'] = $this->siteid;
 							$update_course_data['title'] = $course_data->title;
 							$update_course_data['description'] = $description;
 
 							$this->Course_model->update_course($update_course_data, $course_data->nid);
 						}else{
-							$insert_course_data['startdate'] = date('Y-m-d', $course_start_datetime);	
+							$insert_course_data['startdate'] = date('Y-m-d', $course_start_datetime);
+							$insert_course_data['expirydate'] = date('Y-m-d', $course_expiry_datetime);	
 							$insert_course_data['site_id'] = $this->siteid;
 							$insert_course_data['title'] = $course_data->title;
 							$insert_course_data['description'] = $description;
@@ -350,7 +308,7 @@ class Course extends CI_Controller {
 						$course_page_data = $this->get_course_page($course_data->nid);
 					}
 				}
-			}
+			//}
 		}
 	}
 
